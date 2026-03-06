@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Daythree AI Assistant</title>
+
+<link rel="stylesheet" href="style.css">
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+</head>
+
+<body>
+
+<nav class="navbar">
+
+<div class="logo">
+<img src="images/daythree-logo.png" alt="Daythree Logo">
+</div>
+
+<div class="nav-right">
+
+<span class="nav-quote">
+It's a Brand New Day
+</span>
+
+<button onclick="logout()" class="logout-btn">
+<img src="images/logout-icon.png" alt="Logout">
+</button>
+
+</div>
+
+</nav>
+
+<section class="hero">
+
+<div class="hero-overlay">
+
+<h1>Welcome to the Daythree AI Assistant</h1>
+
+<p>
+Experience the future of customer engagement with Daythree Digital’s AI-powered assistant.
+Our intelligent virtual staff is designed to support businesses with instant responses,
+smart automation and seamless digital interaction.
+Through innovation, analytics and cutting-edge technology,
+Daythree empowers organisations to transform their customer experience journey.
+</p>
+
+</div>
+
+</section>
+
+<h2 class="section-title">About Daythree Digital</h2>
+
+<section class="about-section">
+
+<div class="about-text">
+
+<p>
+Daythree Digital is an award-winning business process management company focused on delivering
+exceptional customer experience lifecycle management solutions. The organisation empowers
+businesses to build stronger and more meaningful relationships with their customers through
+technology-driven strategies and digital innovation.
+</p>
+
+<p>
+By combining data analytics, intelligent automation and modern customer engagement platforms,
+Daythree enables organisations to optimise their service operations and deliver seamless,
+high-quality customer interactions across digital channels.
+</p>
+
+<p>
+With expertise spanning industries such as fintech, telecommunications, e-commerce, travel
+and utilities, Daythree works with leading global brands to transform customer engagement,
+enhance operational efficiency and drive long-term business growth.
+</p>
+
+</div>
+
+<div class="about-image">
+
+<img src="images/daythree-office.jpeg">
+
+</div>
+
+</section>
+
+
+<section class="features">
+
+<div class="feature-card">
+
+<h3>Customer Experience</h3>
+
+<p>
+Daythree specialises in transforming customer journeys through intelligent
+engagement platforms that improve satisfaction, loyalty and service quality.
+</p>
+
+</div>
+
+<div class="feature-card">
+
+<h3>Automation & Analytics</h3>
+
+<p>
+Using data-driven insights and intelligent automation, Daythree enables
+organisations to optimise operations and deliver faster, smarter service.
+</p>
+
+</div>
+
+<div class="feature-card">
+
+<h3>Industry Expertise</h3>
+
+<p>
+Daythree works with leading global brands across industries including
+fintech, telecommunications, e-commerce, travel and utilities.
+</p>
+
+</div>
+
+</section>
+
+
+
+<section class="assistant-section">
+
+<h2 class="ai-title">Talk to Aisya — Our AI Guide</h2>
+
+<div class="ai-wrapper">
+
+<div class="questions-left">
+<div class="question">What is Invest Selangor and what does it do?</div>
+<div class="question">Why should companies invest in Selangor?</div>
+<div class="question">What industries are growing in Selangor?</div>
+<div class="question">What support does Invest Selangor provide?</div>
+<div class="question">How can a company start investing in Selangor?</div>
+</div>
+
+<div id="anam-container">
+
+<anam-agent
+agent-id="07717045-dcc1-408f-a2bc-c2c76e687737"
+mode="inline"
+style="width:100%; height:100%;">
+</anam-agent>
+
+</div>
+
+<div class="questions-right">
+<div class="question">What incentives are available for foreign investors?</div>
+<div class="question">How long does it take to start a business?</div>
+<div class="question">What are the steps to set up a company?</div>
+<div class="question">Are there tax benefits for investors?</div>
+<div class="question">Who should I contact for investment enquiries?</div>
+</div>
+
+</div>
+
+</section>
+
+<script src="https://unpkg.com/@anam-ai/agent-widget" async></script>
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+<script src="supabase.js"></script>
+<script src="auth.js"></script>
+
+</body>
+</html>
