@@ -528,13 +528,14 @@ box-shadow:0 10px 20px rgba(0,0,0,0.25);
 
 .avatar-wrapper{
 position:relative;
-width:700px;
-margin:auto;
+}
+
+#anam-container{
+position:relative;
 }
 
 /* FULLSCREEN BUTTON */
 .fullscreen-icon{
-
 position:absolute;
 top:12px;
 right:12px;
@@ -542,7 +543,7 @@ right:12px;
 width:36px;
 height:36px;
 
-background:rgba(0,0,0,0.6);
+background:rgba(0,0,0,0.7);
 color:white;
 
 border:none;
@@ -560,7 +561,6 @@ z-index:9999;
 
 /* EXIT BUTTON */
 .fullscreen-exit{
-
 position:absolute;
 top:12px;
 right:12px;
@@ -568,13 +568,13 @@ right:12px;
 width:40px;
 height:40px;
 
-background:rgba(0,0,0,0.75);
+background:rgba(0,0,0,0.8);
 color:white;
 
 border:none;
 border-radius:50%;
 
-font-size:18px;
+font-size:20px;
 cursor:pointer;
 
 display:none;
