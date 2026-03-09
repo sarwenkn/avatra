@@ -181,6 +181,8 @@ const container = document.getElementById("anam-container");
 const fullscreenBtn = document.getElementById("fullscreenBtn");
 const exitBtn = document.getElementById("exitBtn");
 
+/* OPEN FULLSCREEN */
+
 window.openFullscreen = function(){
 
 if (container.requestFullscreen) {
@@ -194,6 +196,8 @@ container.msRequestFullscreen();
 }
 
 }
+
+/* CLOSE FULLSCREEN */
 
 window.closeFullscreen = function(){
 
@@ -209,9 +213,9 @@ document.msExitFullscreen();
 
 }
 
-/* Detect fullscreen change */
+/* HANDLE BUTTON SWITCH */
 
-document.addEventListener("fullscreenchange", function(){
+function updateButtons(){
 
 if(document.fullscreenElement){
 
@@ -226,7 +230,17 @@ exitBtn.style.display = "none";
 
 }
 
-});
+}
+
+/* Listen for fullscreen changes */
+
+document.addEventListener("fullscreenchange", updateButtons);
+document.addEventListener("webkitfullscreenchange", updateButtons);
+document.addEventListener("msfullscreenchange", updateButtons);
+
+/* Set initial state */
+
+updateButtons();
 
 });
 
