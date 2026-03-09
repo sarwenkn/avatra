@@ -141,9 +141,9 @@ fintech, telecommunications, e-commerce, travel and utilities.
 
 <div id="anam-container">
 
-<button class="fullscreen-icon" onclick="openFullscreen()">⛶</button>
+<button id="fullscreenBtn" class="fullscreen-icon" onclick="openFullscreen()">⛶</button>
 
-<button class="fullscreen-exit" onclick="closeFullscreen()">✕</button>
+<button id="exitBtn" class="fullscreen-exit" onclick="closeFullscreen()">✕</button>
 
 <anam-agent
 agent-id="07717045-dcc1-408f-a2bc-c2c76e687737"
@@ -175,38 +175,63 @@ style="width:100%; height:100%;">
 
 <script>
 
-function openFullscreen() {
+document.addEventListener("DOMContentLoaded", function(){
 
-const elem = document.getElementById("anam-container");
+const container = document.getElementById("anam-container");
+const fullscreenBtn = document.getElementById("fullscreenBtn");
+const exitBtn = document.getElementById("exitBtn");
 
-document.querySelector(".fullscreen-exit").style.display = "flex";
+window.openFullscreen = function(){
 
-if (elem.requestFullscreen) {
-  elem.requestFullscreen();
+if (container.requestFullscreen) {
+container.requestFullscreen();
 }
-else if (elem.webkitRequestFullscreen) {
-  elem.webkitRequestFullscreen();
+else if (container.webkitRequestFullscreen) {
+container.webkitRequestFullscreen();
 }
-else if (elem.msRequestFullscreen) {
-  elem.msRequestFullscreen();
-}
-
+else if (container.msRequestFullscreen) {
+container.msRequestFullscreen();
 }
 
-function closeFullscreen() {
+}
+
+window.closeFullscreen = function(){
 
 if (document.exitFullscreen) {
-  document.exitFullscreen();
-} 
+document.exitFullscreen();
+}
 else if (document.webkitExitFullscreen) {
-  document.webkitExitFullscreen();
-} 
+document.webkitExitFullscreen();
+}
 else if (document.msExitFullscreen) {
-  document.msExitFullscreen();
+document.msExitFullscreen();
 }
 
 }
+
+/* Detect fullscreen change */
+
+document.addEventListener("fullscreenchange", function(){
+
+if(document.fullscreenElement){
+
+fullscreenBtn.style.display = "none";
+exitBtn.style.display = "flex";
+
+}
+else{
+
+fullscreenBtn.style.display = "flex";
+exitBtn.style.display = "none";
+
+}
+
+});
+
+});
 
 </script>
+
+
 </body>
 </html>
