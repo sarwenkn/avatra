@@ -6,7 +6,7 @@
 
 <link rel="stylesheet" href="style.css">
 
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
 
 </head>
 
@@ -127,7 +127,8 @@ fintech, telecommunications, e-commerce, travel and utilities.
 
 <section class="assistant-section">
 
-<h2 class="ai-title">Talk to Aisya — Our AI Guide</h2>
+<h2 class="ai-title">Meet Aisya | Live Investment Guide</h2>
+<p class="ai-subtitle">Ask naturally and get answers in real time.</p>
 
 <div class="ai-wrapper">
 
@@ -139,7 +140,10 @@ fintech, telecommunications, e-commerce, travel and utilities.
 <div class="question">How can a company start investing in Selangor?</div>
 </div>     
 
-<div id="anam-container">      
+<div class="anam-center">
+<div id="anam-container">   
+    
+<div id="avatar-subtitles"></div>    
 
 <button id="fullscreenBtn" class="fullscreen-icon" onclick="openFullscreen()">⛶</button>
 
@@ -150,6 +154,17 @@ agent-id="5c4d43e1-a290-485f-853e-5f71a818adf3"
 mode="inline"
 style="width:100%; height:100%;">
 </anam-agent>
+
+</div>
+
+<div id="live-transcript-panel" aria-live="polite">
+<div class="transcript-top">
+<strong>Live Captions</strong>
+<span id="live-transcript-status">Ready when you are.</span>
+</div>
+<div id="live-transcript-active"></div>
+<div id="live-transcript-history"></div>
+</div>
 
 </div>
 
@@ -172,6 +187,7 @@ style="width:100%; height:100%;">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 <script src="supabase.js"></script>
 <script src="auth.js"></script>
+<script src="elevenlabsTranscription.js"></script>
 
 <script>
 
@@ -200,6 +216,37 @@ fullscreenBtn.style.display = "flex";
 exitBtn.style.display = "none";
 
 }
+
+</script>
+
+<script>
+
+const subtitleBox = document.getElementById("avatar-subtitles");
+
+const observer = new MutationObserver(() => {
+
+const messages = document.querySelectorAll("anam-agent .message");
+
+if(messages.length === 0) return;
+
+const lastMessage = messages[messages.length - 1];
+
+const role = lastMessage.getAttribute("data-role");
+const text = lastMessage.innerText;
+
+if(role === "persona"){
+subtitleBox.innerText = "AI: " + text;
+}
+else{
+subtitleBox.innerText = "User: " + text;
+}
+
+});
+
+observer.observe(document.body,{
+childList:true,
+subtree:true
+});
 
 </script>
 
