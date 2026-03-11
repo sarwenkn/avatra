@@ -369,13 +369,14 @@ color:transparent;
 text-shadow:0 14px 32px rgba(60,33,140,0.2);
 }
 
-.ai-subtitle{
+/*.ai-subtitle{
 margin:12px 0 34px;
 font-size:16px;
 font-weight:500;
 color:var(--ink-700);
 letter-spacing:0.2px;
 }
+*/
 
 /* LOGOUT BUTTON */
 
@@ -574,7 +575,7 @@ transform:translateY(-2px);
 filter:brightness(1.08);
 }
 
-#avatar-subtitles{
+/*#avatar-subtitles{
 position:absolute;
 bottom:22px;
 left:50%;
@@ -591,6 +592,7 @@ line-height:1.42;
 z-index:99999;
 pointer-events:none;
 }
+*/
 
 #live-transcript-panel{
 width:100%;
@@ -695,9 +697,9 @@ padding:66px 18px 86px;
 font-size:38px;
 }
 
-.ai-subtitle{
+/*.ai-subtitle{
 margin-bottom:26px;
-}
+}*/
 
 .ai-wrapper{
 grid-template-columns:1fr;
@@ -732,9 +734,9 @@ width:min(96vw,670px);
 font-size:31px;
 }
 
-.ai-subtitle{
+/*.ai-subtitle{
 font-size:15px;
-}
+}*/
 
 .transcript-top{
 flex-direction:column;
