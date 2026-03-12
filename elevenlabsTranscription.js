@@ -3,9 +3,10 @@ const transcriptPanel = document.getElementById("live-transcript-panel");
 const transcriptStatus = document.getElementById("live-transcript-status");
 const transcriptActive = document.getElementById("live-transcript-active");
 const transcriptHistory = document.getElementById("live-transcript-history");
+const transcriptToggle = document.getElementById("live-transcript-toggle");
 const anamContainer = document.getElementById("anam-container");
 
-if (!transcriptPanel || !transcriptStatus || !transcriptActive || !transcriptHistory || !anamContainer) {
+if (!transcriptPanel || !transcriptStatus || !transcriptActive || !transcriptHistory || !transcriptToggle || !anamContainer) {
 return;
 }
 
@@ -18,6 +19,26 @@ const WS_BASE_URL = "wss://api.elevenlabs.io/v1/speech-to-text/realtime";
 const MODEL_ID = "scribe_v2_realtime";
 const SAMPLE_RATE = 16000;
 const AUTO_STOP_AFTER_IDLE_MS = 60000;
+const ALLOWED_LANGUAGES = new Set(["en", "ms", "id"]);
+const LANGUAGE_ALIASES = {
+"en": "en",
+"eng": "en",
+"english": "en",
+"en-us": "en",
+"en-gb": "en",
+"ms": "ms",
+"bm": "ms",
+"malay": "ms",
+"bahasa melayu": "ms",
+"msa": "ms",
+"zsm": "ms",
+"ms-my": "ms",
+"id": "id",
+"ind": "id",
+"indonesian": "id",
+"bahasa indonesia": "id",
+"id-id": "id"
+};
 const POSSIBLE_CONVERSATION_END_EVENTS = [
 "conversation-ended",
 "conversation_ended",
@@ -42,13 +63,19 @@ let sourceNode = null;
 let processorNode = null;
 let silenceCommitSent = false;
 let lastSpeechTs = 0;
-let lastCommitTs = 0;
 let intentionalStop = false;
 let reconnectAttempts = 0;
 let lastServerError = "";
 let lastCommittedText = "";
 let lastCommittedAt = 0;
 let idleStopTimer = null;
+let filteredStatusActive = false;
+
+function setToggleState(isActive) {
+transcriptToggle.textContent = isActive ? "Stop Captions" : "Start Captions";
+transcriptToggle.setAttribute("aria-pressed", isActive ? "true" : "false");
+transcriptToggle.classList.toggle("is-live", isActive);
+}
 
 function clearIdleStopTimer() {
 if (idleStopTimer) {
@@ -94,6 +121,23 @@ const row = document.createElement("div");
 row.className = "transcript-line";
 row.textContent = clean;
 transcriptHistory.appendChild(row);
+}
+
+function markFilteredLanguage() {
+setActiveLine("");
+filteredStatusActive = true;
+setStatus("Filtered non-English/BM/ID audio.", "status-live");
+}
+
+function clearFilteredLanguageStatus() {
+if (!filteredStatusActive) {
+return;
+}
+
+filteredStatusActive = false;
+if (started) {
+setStatus("Listening...", "status-live");
+}
 }
 
 function downsampleTo16k(floatBuffer, inputSampleRate) {
@@ -153,6 +197,78 @@ sum += floatBuffer[i] * floatBuffer[i];
 return Math.sqrt(sum / floatBuffer.length);
 }
 
+function firstNonEmptyString(values) {
+for (let i = 0; i < values.length; i += 1) {
+if (typeof values[i] === "string" && values[i].trim()) {
+return values[i];
+}
+}
+return "";
+}
+
+function normalizeLanguage(raw) {
+if (!raw) {
+return "";
+}
+
+const normalized = String(raw).trim().toLowerCase().replace(/_/g, "-").replace(/\s+/g, " ");
+if (!normalized) {
+return "";
+}
+
+if (LANGUAGE_ALIASES[normalized]) {
+return LANGUAGE_ALIASES[normalized];
+}
+
+const base = normalized.split("-")[0];
+if (LANGUAGE_ALIASES[base]) {
+return LANGUAGE_ALIASES[base];
+}
+
+if (ALLOWED_LANGUAGES.has(base)) {
+return base;
+}
+
+return normalized;
+}
+
+function extractDetectedLanguage(message) {
+const metadata = message && typeof message.metadata === "object" ? message.metadata : {};
+const details = message && typeof message.details === "object" ? message.details : {};
+const data = message && typeof message.data === "object" ? message.data : {};
+
+return firstNonEmptyString([
+message && message.language_code,
+message && message.language,
+message && message.detected_language,
+message && message.languageCode,
+message && message.detectedLanguage,
+message && message.lang,
+message && message.locale,
+metadata.language_code,
+metadata.language,
+metadata.detected_language,
+metadata.detectedLanguage,
+details.language_code,
+details.language,
+details.detected_language,
+data.language_code,
+data.language,
+data.detected_language
+]);
+}
+
+function shouldDisplayCaption(message) {
+const detected = extractDetectedLanguage(message);
+const normalized = normalizeLanguage(detected);
+
+if (!normalized) {
+return false;
+}
+
+return ALLOWED_LANGUAGES.has(normalized);
+}
+
 function sendAudioChunk(base64Chunk) {
 if (!ws || ws.readyState !== WebSocket.OPEN) {
 return;
@@ -177,20 +293,40 @@ return;
 
 const type = message.message_type || message.type || "";
 const text = typeof message.text === "string" ? message.text.trim() : "";
+const isPartialTranscript = type === "partial_transcript" || type === "partial_transcript_with_timestamps";
+const isCommittedTranscript = type === "committed_transcript"
+|| type === "committed_transcript_with_timestamps"
+|| type === "final_transcript";
 
 if (type === "session_started") {
+filteredStatusActive = false;
 setStatus("Listening...", "status-live");
 scheduleIdleAutoStop();
 return;
 }
 
-if (type === "partial_transcript") {
+if (isPartialTranscript) {
+if (!shouldDisplayCaption(message)) {
+markFilteredLanguage();
+scheduleIdleAutoStop();
+return;
+}
+
+clearFilteredLanguageStatus();
+setActiveLine(text);
+scheduleIdleAutoStop();
+return;
+}
+
+if (isCommittedTranscript) {
+if (!shouldDisplayCaption(message)) {
+markFilteredLanguage();
 setActiveLine("");
 scheduleIdleAutoStop();
 return;
 }
 
-if (type === "committed_transcript" || type === "committed_transcript_with_timestamps") {
+clearFilteredLanguageStatus();
 if (text) {
 const normalized = text.toLowerCase().replace(/\s+/g, " ").trim();
 const now = Date.now();
@@ -213,7 +349,7 @@ setStatus("Transcription service error.", "status-fallback");
 return;
 }
 
-if (type.toLowerCase().includes("error")) {
+if (String(type).toLowerCase().includes("error")) {
 const detail = message.error || message.message || message.detail || JSON.stringify(message);
 lastServerError = String(detail);
 setStatus("Transcription service error.", "status-fallback");
@@ -275,7 +411,7 @@ handleRealtimeMessage(event.data);
 };
 
 ws.onerror = () => {
-setStatus("Connection issue. Tap avatar to retry.", "status-fallback");
+setStatus("Connection issue. Use Start Captions to retry.", "status-fallback");
 };
 
 ws.onclose = (event) => {
@@ -290,6 +426,7 @@ return;
 }
 
 started = false;
+setToggleState(false);
 setStatus("Connection closed (code " + code + ").", "status-fallback");
 if (detail || reason) {
 console.warn("Transcript connection closed:", code, reason, detail);
@@ -348,9 +485,9 @@ lastSpeechTs = now;
 silenceCommitSent = false;
 scheduleIdleAutoStop();
 }
+
 if (!isSpeech && lastSpeechTs > 0 && !silenceCommitSent && now - lastSpeechTs > 650) {
 silenceCommitSent = true;
-lastCommitTs = now;
 }
 
 sendAudioChunk(base64Chunk);
@@ -361,9 +498,12 @@ async function startTranscription() {
 if (started) {
 return;
 }
+
 started = true;
 intentionalStop = false;
 lastServerError = "";
+filteredStatusActive = false;
+setToggleState(true);
 scheduleIdleAutoStop();
 
 try {
@@ -372,6 +512,7 @@ await connectRealtime();
 } catch (error) {
 started = false;
 clearIdleStopTimer();
+setToggleState(false);
 const message = error && error.message ? error.message : "Unable to start transcription";
 setStatus(message, "status-fallback");
 }
@@ -380,6 +521,7 @@ setStatus(message, "status-fallback");
 function stopTranscription(idleMessage) {
 intentionalStop = true;
 clearIdleStopTimer();
+filteredStatusActive = false;
 
 if (processorNode) {
 processorNode.disconnect();
@@ -402,38 +544,56 @@ micStream.getTracks().forEach((track) => track.stop());
 micStream = null;
 }
 
-if (ws && ws.readyState === WebSocket.OPEN) {
+if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) {
 ws.close();
 }
+
 ws = null;
 started = false;
+setToggleState(false);
+setActiveLine("");
 setStatus(idleMessage || "Stopped.", "status-idle");
 }
 
 function bindConversationEndEvents() {
 const agentElement = document.querySelector("anam-agent");
-if (!agentElement) {
-return;
-}
+const targets = [agentElement, anamContainer, document, window];
 
-POSSIBLE_CONVERSATION_END_EVENTS.forEach((eventName) => {
-agentElement.addEventListener(eventName, () => {
+const handleConversationEnded = () => {
 if (started) {
 stopTranscription("Conversation ended. Transcript stopped.");
 }
+};
+
+targets.forEach((target) => {
+if (!target) {
+return;
+}
+POSSIBLE_CONVERSATION_END_EVENTS.forEach((eventName) => {
+target.addEventListener(eventName, handleConversationEnded);
 });
 });
 }
 
-anamContainer.addEventListener("click", startTranscription);
-anamContainer.addEventListener("keydown", startTranscription);
+function bindTranscriptControls() {
+transcriptToggle.addEventListener("click", () => {
+if (started) {
+stopTranscription("Live captions stopped.");
+return;
+}
+startTranscription();
+});
+}
+
+bindTranscriptControls();
+bindConversationEndEvents();
 window.addEventListener("beforeunload", () => stopTranscription());
 document.addEventListener("visibilitychange", () => {
 if (document.hidden && started) {
 stopTranscription();
 }
 });
-bindConversationEndEvents();
 
-setStatus("Tap avatar area to start live captions.", "status-idle");
+setToggleState(false);
+setStatus("Click Start Captions to begin.", "status-idle");
 })();
