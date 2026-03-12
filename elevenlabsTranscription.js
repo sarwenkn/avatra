@@ -126,7 +126,7 @@ transcriptHistory.appendChild(row);
 function markFilteredLanguage() {
 setActiveLine("");
 filteredStatusActive = true;
-setStatus("Filtered non-English/BM/ID audio.", "status-live");
+setStatus("Listening...", "status-live");
 }
 
 function clearFilteredLanguageStatus() {
